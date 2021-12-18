@@ -1,10 +1,43 @@
--- RegisterServerEvent('particle:StartParticleAtLocation')
--- AddEventHandler('particle:StartParticleAtLocation', function(x,y,z,particle,id,rx,ry,rz)
--- TriggerClientEvent('particle:StartClientParticle', -1, x,y,z,particle,id,rx,ry,rz)
--- end)
+-- GIFT FROM NoPain, https://r1c.pw/discord
 
--- RegisterServerEvent('particle:StopParticle')
--- AddEventHandler('particle:StopParticle', function(x,y,z,particle,id,rx,ry,rz)
--- TriggerClientEvent('particle:StopParticleClient', -1, id)
--- end)
+local ActiveParticles = {}
+local BlackListedParticles = {}
 
+TriggerEvent("particles:player:ready")
+
+-- GIFT FROM NoPain, https://r1c.pw/discord
+
+RegisterNetEvent("particle:sync:entity")
+TriggerClientEvent("particle:sync:entity", function(serverID, targetID, ptDict, ptName, looped, target, position, duration)
+AddEventHandler("particle:sync:entity", TriggerParticleOnEntity)
+    local entity = NetworkGetEntityFromNetworkId(target)
+
+    if IsParticleBlacklisted(ptDict, ptName) then return end
+
+    if type(bone) == "table" then
+        local particles = {}
+
+        for _, boneName in ipairs(bone) do
+            local particle = promise:new()
+            
+            Citizen.CreateThread(function()
+                local particleHandle = StartParticleOnEntity(ptDict, ptName, looped, entity, boneName, position.offset, position.rot, particle.id, particle.particle)
+                particle:resolve(particleHandle)
+            end)
+
+            particles[#particles + 1] = particle
+        end
+
+        if not duration and ptID then
+            ActiveParticles[ptID] = particleHandle
+        end
+    else
+        local particleHandle = StartParticleOnEntity(ptDict, ptName, looped, entity, bone, position.offset, position.rot, particle.id, particle.particle)
+    
+        if not duration and ptID then
+            ActiveParticles[ptID] = particleHandle
+        end
+    end
+end)
+
+-- GIFT FROM NoPain, https://r1c.pw/discord
